@@ -19,7 +19,7 @@ const char BitCoinWallet [] = "xx";
 
 //Globals
 ESP8266WiFiMulti WiFiMulti;
-SSD1306  display(0x3c, D3, D5);
+SSD1306 display(0x3c, D3, D5);
 
 
 void setup() 
@@ -64,12 +64,10 @@ void printBuffer(double currency, double totol_balance_btc, double total_balance
   char line1[30];
   char line2[30];
   char line3[30];
-
-
+  
   dtostrf(currency,0, 8, line1);
   dtostrf(totol_balance_btc,0, 8, line2);
   dtostrf(total_balance,0, 8, line3);
-  Serial.println(line1);
 
   // Some test data
   char* test[] = {
@@ -78,7 +76,8 @@ void printBuffer(double currency, double totol_balance_btc, double total_balance
     line3
   };
 
-  for (uint8_t i = 0; i < 3; i++) {
+  for (uint8_t i = 0; i < 3; i++) 
+  {
     display.clear();
     // Print to the screen
     display.println(test[i]);
@@ -98,20 +97,24 @@ void loop()
   { 
     delay(5000);
     double currency = getCurrency();
-    delay(5000);
-    double total_balance_btc = getTotalBTC(BitCoinWallet);
+    for(int i = 0; i<150; i++)
+    {
+      delay(5000);
+      double total_balance_btc = getTotalBTC(BitCoinWallet);
+      
+      Serial.print("1 BTC: ");
+      Serial.print(currency,9);
+      Serial.println(" USD");
+      Serial.print("Total BTC: ");
+      Serial.println(total_balance_btc,9);
+      Serial.print("Total USD: ");
+      Serial.println(total_balance_btc*currency,9);
+      printBuffer(currency, total_balance_btc, total_balance_btc*currency);
+    }
     
-    Serial.print("1 BTC: ");
-    Serial.print(currency,9);
-    Serial.println(" USD");
-    Serial.print("Total BTC: ");
-    Serial.println(total_balance_btc,9);
-    Serial.print("Total USD: ");
-    Serial.println(total_balance_btc*currency,9);
-    printBuffer(currency, total_balance_btc, total_balance_btc*currency);
-  }
+  }//end of wifi check
   
-}
+}//end of loop
 
 
 
