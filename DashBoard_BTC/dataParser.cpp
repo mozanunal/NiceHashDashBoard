@@ -23,7 +23,7 @@ String getJsonFromUrl(char *url)
     if (httpCode > 0) //Check the returning code
     { 
       payload = http.getString();   //Get the request response payload
-      Serial.println(payload);      //Print the response payloa
+      //Serial.println(payload);      //Print the response payloa
     }
     http.end();   //Close connection
     return payload;

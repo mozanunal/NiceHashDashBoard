@@ -13,9 +13,9 @@
 #include "frames.h"
 
 //User Settings
-const char ssid_1 [] = "xx";
-const char pass_1 [] = "xx";
-const char BitCoinWallet [] = "xx";
+const char ssid_1 [] = "BABALAR";
+const char pass_1 [] = "24939300";
+const char BitCoinWallet [] = "1FVJWQaaobMvr9omaRo566xRP5BJQAkE4k";
 
 //Globals
 ESP8266WiFiMulti WiFiMulti;
@@ -55,61 +55,65 @@ void setup()
 
 
 
-void printBuffer(double currency, double totol_balance_btc, double total_balance ) 
+
+void frameLoop(double currency, double totol_balance_btc, double total_balance)
 {
-  // Initialize the log buffer
-  // allocate memory to store 3 lines of text and 30 chars per line.
-  display.setLogBuffer(3, 30);
-
-  char line1[30];
-  char line2[30];
-  char line3[30];
   
-  dtostrf(currency,0, 8, line1);
-  dtostrf(totol_balance_btc,0, 8, line2);
-  dtostrf(total_balance,0, 8, line3);
+  //currency
+  delay(2000);
+  char currency_line[30];
+  dtostrf(currency,0, 2, currency_line);
+  sprintf(currency_line,"%s %s", currency_line, " $");
+  display.clear();
+  display.drawString(0 , 0,  "1 BTC:");
+  display.drawString(0 , 20, currency_line);
+  display.display();
 
-  // Some test data
-  char* test[] = {
-    line1,
-    line2,
-    line3
-  };
 
-  for (uint8_t i = 0; i < 3; i++) 
-  {
-    display.clear();
-    // Print to the screen
-    display.println(test[i]);
-    // Draw it to the internal screen buffer
-    display.drawLogBuffer(0, 0);
-    // Display it on the screen
-    display.display();
-    delay(500);
-  }
-}
+  // total dollar
+  delay(2000);
+  char total_balance_line[30];
+  dtostrf(total_balance,0, 8, total_balance_line); 
+  sprintf(total_balance_line,"%s %s", total_balance_line, " $");
+  display.clear();
+  display.drawString(0 , 0,  "Total:");
+  display.drawString(0 , 20, total_balance_line);
+  display.display();
+
+
+  // total btc
+  delay(2000);
+  char totol_balance_btc_line[30];
+  dtostrf(totol_balance_btc,0, 8, totol_balance_btc_line);
+  sprintf(totol_balance_btc_line,"%s %s", totol_balance_btc_line, " BTC");
+  display.clear();
+  display.drawString(0 , 0,  "Total:");
+  display.drawString(0 , 20, totol_balance_btc_line);
+  display.display();
+  
+} 
 
 
 void loop() 
 {
-
   if (WiFiMulti.run() == WL_CONNECTED) //Check WiFi connection status
   { 
-    delay(5000);
+
+    display.clear();
+    display.drawString(0 , 20, "UPDATING...");
+    display.display();
     double currency = getCurrency();
-    for(int i = 0; i<150; i++)
+    double total_balance_btc = getTotalBTC(BitCoinWallet);
+    Serial.print("1 BTC: ");
+    Serial.print(currency,9);
+    Serial.println(" USD");
+    Serial.print("Total BTC: ");
+    Serial.println(total_balance_btc,9);
+    Serial.print("Total USD: ");
+    Serial.println(total_balance_btc*currency,9);
+    for(int i = 0; i<10; i++)// 3 * 2000 ms * 10
     {
-      delay(5000);
-      double total_balance_btc = getTotalBTC(BitCoinWallet);
-      
-      Serial.print("1 BTC: ");
-      Serial.print(currency,9);
-      Serial.println(" USD");
-      Serial.print("Total BTC: ");
-      Serial.println(total_balance_btc,9);
-      Serial.print("Total USD: ");
-      Serial.println(total_balance_btc*currency,9);
-      printBuffer(currency, total_balance_btc, total_balance_btc*currency);
+      frameLoop(currency, total_balance_btc, total_balance_btc*currency);
     }
     
   }//end of wifi check
