@@ -20,20 +20,35 @@ String getJsonFromUrl(char *url)
     String payload;
     http.begin(url);  //Specify request destination
     int httpCode = http.GET(); //Send the request
+    Serial.print("\n Received http code ");
+    Serial.println(httpCode);     
     if (httpCode > 0) //Check the returning code
     { 
+      Serial.println("HTTP OK");
       payload = http.getString();   //Get the request response payload
-      //Serial.println(payload);      //Print the response payloa
+      Serial.println(payload);      //Print the response payloa
+      return payload;
+    }
+    else
+    {
+      Serial.println("HTTP ERROR");
+      return "{}";
     }
     http.end();   //Close connection
-    return payload;
 }
 
 double getCurrency()
 {
     JsonObject& root_Currency = jsonBuffer_Currency.parseObject( getJsonFromUrl(url_Currency) );
-    double currency = root_Currency["USD"]["last"];
-    return currency;
+    if (root_Currency.success()) 
+    {
+      double currency = root_Currency["USD"]["last"];
+      return currency;
+    }
+    else
+    {
+      return 0.0;
+    }
 }
 
 double getTotalBTC(const char *BitCoinWallet)
@@ -42,16 +57,22 @@ double getTotalBTC(const char *BitCoinWallet)
   strcpy( url_Balence, url_Balance_base );
   strcat( url_Balence, BitCoinWallet );
   JsonObject& root_Balance = jsonBuffer_Balance.parseObject( getJsonFromUrl(url_Balence) );
-  double balances[6];
-  int algos[6];
   double total_balance_btc = 0.0;
-  for (int i = 0; i<6; i++)
+  if (root_Balance.success()) 
   {
-      algos[i] = root_Balance["result"]["stats"][i]["algo"];
-      const char* balchar = root_Balance["result"]["stats"][i]["balance"];
-      balances[i] = strtod(balchar, NULL);
-      total_balance_btc += balances[i];
+    double balances[8];
+    int algos[8];
+    for (int i = 0; i<8; i++)
+    {
+        algos[i] = root_Balance["result"]["stats"][i]["algo"];
+        const char* balchar = root_Balance["result"]["stats"][i]["balance"];
+        balances[i] = strtod(balchar, NULL);
+        Serial.print(balchar);
+        Serial.println(balances[i]);
+        total_balance_btc += balances[i];
+    }
   }
+
   return total_balance_btc;
 }
 

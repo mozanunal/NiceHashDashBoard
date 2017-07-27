@@ -13,9 +13,11 @@
 #include "frames.h"
 
 //User Settings
-const char ssid_1 [] = "BABALAR";
-const char pass_1 [] = "24939300";
-const char BitCoinWallet [] = "1FVJWQaaobMvr9omaRo566xRP5BJQAkE4k";
+const char ssid_1 [] = "";
+const char pass_1 [] = "";
+const char ssid_2 [] = "";
+const char pass_2 [] = "";
+const char BitCoinWallet [] = "";
 
 //Globals
 ESP8266WiFiMulti WiFiMulti;
@@ -24,33 +26,36 @@ SSD1306 display(0x3c, D3, D5);
 
 void setup() 
 {
-  
-    //Setup Serial
-    Serial.begin(115200);
-    delay(10);
-
-    //Setup Wifi
-    WiFiMulti.addAP( ssid_1 , pass_1);
-    Serial.println();
-    Serial.println();
-    Serial.print("Wait for WiFi... ");
-    while(WiFiMulti.run() != WL_CONNECTED) {
-        Serial.print(".");
-        delay(500);
-    }
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
-    delay(500);
-
     //Setup Oled
     display.init();
     display.flipScreenVertically();
     display.setFont(ArialMT_Plain_16);
     display.setTextAlignment(TEXT_ALIGN_LEFT);
     display.clear();
-    
+
+
+    //Setup Serial
+    Serial.begin(115200);
+    delay(10);
+
+    //Setup Wifi
+    WiFiMulti.addAP( ssid_1 , pass_1);
+    WiFiMulti.addAP( ssid_2 , pass_2);
+    display.clear();
+    display.drawString(0 , 20, "Waiting for wifi...");
+    display.display();
+    int xpos = 0;
+    while(WiFiMulti.run() != WL_CONNECTED) {
+        display.drawString(xpos ,40 , ".");
+        xpos= xpos + 3;
+        display.display();
+        delay(500);
+    }
+    display.clear();
+    display.drawString(0 , 20, "Connected to wifi...");
+    //display.drawString(0 , 40, WiFi.localIP()));
+    display.display();
+    delay(2000);
 }
 
 
@@ -94,16 +99,19 @@ void frameLoop(double currency, double totol_balance_btc, double total_balance)
 } 
 
 
+int loopCounter = 0;
+double currency = 0;
+double total_balance_btc = 0;
 void loop() 
 {
   if (WiFiMulti.run() == WL_CONNECTED) //Check WiFi connection status
   { 
-
     display.clear();
     display.drawString(0 , 20, "UPDATING...");
     display.display();
-    double currency = getCurrency();
-    double total_balance_btc = getTotalBTC(BitCoinWallet);
+    if(loopCounter%20==0){ currency = getCurrency(); }
+    if(loopCounter%2==0){ total_balance_btc = getTotalBTC(BitCoinWallet); }
+    ///////////////
     Serial.print("1 BTC: ");
     Serial.print(currency,9);
     Serial.println(" USD");
@@ -111,11 +119,12 @@ void loop()
     Serial.println(total_balance_btc,9);
     Serial.print("Total USD: ");
     Serial.println(total_balance_btc*currency,9);
-    for(int i = 0; i<10; i++)// 3 * 2000 ms * 10
+    ///////////
+    for(int i = 0; i<3; i++)// 3 frame * 2000 ms * 10 loop
     {
       frameLoop(currency, total_balance_btc, total_balance_btc*currency);
     }
-    
+    loopCounter++;
   }//end of wifi check
   
 }//end of loop
